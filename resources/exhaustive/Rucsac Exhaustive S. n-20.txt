@@ -1,7 +1,0 @@
-Rucsac: Solutie Exhaustiva n-20
-
-V	G	Solutie
-
-Best Solution: 520	102	10111111111111111111
-
- Execution time 179ms!

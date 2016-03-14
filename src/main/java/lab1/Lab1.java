@@ -16,8 +16,8 @@ import org.apache.commons.lang3.StringUtils;
 
 public class Lab1 {
 
-	private static final int N = 20;
-	private static final int K = 20;
+	private static final int N = 100;
+	private static final int K = 50;
 
 	private static final int valoareMax = 50;
 	private static final int greutateMax = 10;
@@ -29,15 +29,15 @@ public class Lab1 {
 	private static final String SOLUTION_RANDOM = "resources/N-" + N + "/Random S. n-" + N + " k-" + K + ".txt";
 	private static final String SOLUTION_GREEDY = "resources/N-" + N + "/Greedy S. n-" + N + ".txt";
 	private static final String SOLUTION_EXHAUSTIVE = "resources/N-" + N + "/Exhaustive S. n-" + N + ".txt";
+	private static final String SOLUTION_STEEPEST_ASCENT = "resources/N-" + N + "/Hill Climbing S. n-" + N + " k-" + K + ".txt";
 
-	public static void main(String[] args) throws IOException {
+	public static void main(final String[] args) throws IOException {
 
-		//generateNumbers();
-		
 		readFile();
-		randomSearch();
-		exhaustiveSearch();
-		greedySearch();
+//		randomSearch();
+//		exhaustiveSearch();
+//		greedySearch();
+		steepestAscentSearch();
 		System.out.println("end");
 	}
 
@@ -106,6 +106,7 @@ public class Lab1 {
 		writer.println("V\tG\tSolutie");
 
 		int bestG = 0, bestV = 0, tGreutate = 0, tValoare = 0, avgG = 0, avgV = 0;
+		int result[];
 		Boolean[] bestS = new Boolean[N + 1];
 		ObiectRucsac[] objRulari = new ObiectRucsac[10];
 
@@ -119,16 +120,10 @@ public class Lab1 {
 					S[i] = rn.nextBoolean();
 				}
 				// checkValid
-				tGreutate = 0;
-				tValoare = 0;
-				for (int i = 0; i < N; i++) {
-					if (S[i]) {
-						tGreutate += G[i];
-						tValoare += V[i];
-					}
-				}
+				result = computeAndCheckValid(S);
+				
 				// print valid and best solution, update bestSolution
-				if (tGreutate <= capacitateRucsac && tValoare > bestV) {
+				if (result[1] > 0  && result[0] > bestV) {
 					bestV = tValoare;
 					bestG = tGreutate;
 					bestS = S.clone();
@@ -150,34 +145,8 @@ public class Lab1 {
 			}
 		}
 
-		bestV = 0;
-		bestG = 0;
-		for (int z = 0; z < 10; z++) {
-			int v = objRulari[z].getValoare();
-			int g = objRulari[z].getGreutate();
-
-			if (v > bestV) {
-				bestV = v;
-				bestG = g;
-				bestS = objRulari[z].getBooleanSol().clone();
-			}
-
-			avgV += v;
-			avgG += g;
-		}
-		avgV = avgV / 10;
-		avgG = avgG / 10;
-		// print Best Solution
-		writer.println("\n!!Best Solution:");
-		writer.println(printSolution(bestV, bestG, bestS));
-		writer.println("\n!!Average Solution:");
-		writer.println(avgV + " " + avgG);
-
-		long endTime = System.nanoTime();
-		long duration = (endTime - startTime) / 1000000;
-
-		writer.println("\nExecution time " + duration + "ms!");
-		writer.close();
+		printSolutionForAllExecutions(objRulari, 10, writer);
+		printExecutionTime(startTime, writer);
 	}
 
 	public static void exhaustiveSearch() throws FileNotFoundException, UnsupportedEncodingException {
@@ -203,8 +172,9 @@ public class Lab1 {
 				}
 			}
 
-			if (j % 1000000 == 0)
+			if (j % 1000000 == 0) {
 				System.out.println(j);
+			}
 
 			// update best solution &&
 			if (tValoare > bestV && tGreutate < capacitateRucsac) {
@@ -240,23 +210,23 @@ public class Lab1 {
 			obj.setGreutate(G[i]);
 			obj.setValoare(V[i]);
 			obj.setCalitate(calitate);
-			
+
 			objectsList.add(obj);
 		}
-		
+
 		//sort dupa calitate
 		Collections.sort(objectsList, new Comparator<ObiectRucsac>() {
-			public int compare(ObiectRucsac obj1, ObiectRucsac obj2) {
+			public int compare(final ObiectRucsac obj1, final ObiectRucsac obj2) {
 				return obj1.getCalitate().compareTo(obj2.getCalitate());
 			}
 		});
-		
+
 		int bestG = 0, bestV = 0, k=0;
 		Boolean[] bestS = new Boolean[N + 1];
 		for(int z=0; z<N+1; z++) {
 			bestS[z] = false;
 		}
-		
+
 		while(k<N) {
 			if((bestG + objectsList.get(k).getGreutate()) < capacitateRucsac) {
 				bestG+=objectsList.get(k).getGreutate();
@@ -279,7 +249,7 @@ public class Lab1 {
 		writer.close();
 	}
 
-	private static String printSolution(int v, int g, Boolean[] s) {
+	private static String printSolution(final int v, final int g, final Boolean[] s) {
 		StringBuilder str;
 		str = new StringBuilder("");
 		str.append(v);
@@ -287,16 +257,18 @@ public class Lab1 {
 		str.append(g);
 		str.append("\t");
 		for (int i = 0; i < N; i++) {
-			if (s[i])
+			if (s[i]) {
 				str.append('1');
-			else
+			}
+			else {
 				str.append('0');
+			}
 		}
 
 		return str.toString();
 	}
 
-	private static String printStringSolution(int v, int g, String s) {
+	private static String printStringSolution(final int v, final int g, final String s) {
 		StringBuilder str;
 		str = new StringBuilder("");
 		str.append(v);
@@ -305,6 +277,177 @@ public class Lab1 {
 		str.append("\t");
 		str.append(s);
 		return str.toString();
+	}
+
+
+	private static void steepestAscentSearch() throws FileNotFoundException, UnsupportedEncodingException {
+		long startTime = System.nanoTime();
+		PrintWriter writer = new PrintWriter(SOLUTION_STEEPEST_ASCENT, "UTF-8");
+		writer.println("Rucsac: Solutie Steepest Ascent Hill Climbing n-" + N + " k-" + K);
+		
+		int bestV, bestG;
+//		ObiectRucsac[] objRulari = new ObiectRucsac[10];
+		ObiectRucsac localObj;
+		ObiectRucsac bestSolFromK = null;
+		
+//		//Simuleaza rulari
+//		for (int z = 0; z < 10; z++) {
+			bestG = 0;
+			bestV = 0;
+			
+			//find best solution in K tries
+			for (int j = 0; j < K; j++) {
+				localObj = hillClimbing();
+				if(bestV <= 0 && localObj != null) {
+					bestSolFromK = localObj;
+					bestV = bestSolFromK.getValoare();
+					bestG = bestSolFromK.getGreutate();
+				} else if(localObj != null && bestV < localObj.getValoare()){
+					bestSolFromK = localObj;
+					bestV = bestSolFromK.getValoare();
+					bestG = bestSolFromK.getGreutate();
+				}
+			}
+			
+//			//save Solution
+//			objRulari[z] = bestSolFromK;
+			
+			// print solution or message
+//			writer.println("\nSolutie rularea " + (z + 1));
+			if(bestSolFromK != null && bestSolFromK.getValoare() > 0) {
+				writer.println(printSolution(bestV, bestG, bestSolFromK.getBooleanSol()));
+			} else {
+				writer.println("Nici o solutie valida");
+			}
+//		}
+		
+//		printSolutionForAllExecutions(objRulari, 10, writer);
+		printExecutionTime(startTime, writer);
+		
+	}
+
+	private static int[] computeAndCheckValid(final Boolean[] S) {
+		int result[] = new int[2];
+		int v=0, g=0;
+
+		for (int i = 0; i < N; i++) {
+			if (S[i]) {
+				g += G[i];
+				v += V[i];
+			}
+		}
+		
+		if(g > capacitateRucsac) {
+			result[0] = -1;
+			result[1] = -1;
+		} else {
+			result[0] = v;
+			result[1] = g;
+		}
+			
+		return result;
+	}
+	
+	public static void printExecutionTime(long startTime, PrintWriter writer) {
+		long endTime = System.nanoTime();
+		long duration = (endTime - startTime) / 1000000;
+		writer.println("\nExecution time " + duration + "ms!");
+		writer.close();
+	}
+		
+ 	private static void printSolutionForAllExecutions(ObiectRucsac[] objRulari, int z, PrintWriter writer) {
+		//compute final best Solution
+		int bestV=-1, bestG=-1, avgG=0, avgV=0;
+		Boolean[] bestS = new Boolean[N + 1];
+		int k = 0;
+		
+		for (z = 0; z < 10; z++) {
+			if(objRulari[z] != null ) {
+				int v = objRulari[z].getValoare();
+				int g = objRulari[z].getGreutate();
+	
+				if (v > bestV) {
+					bestV = v;
+					bestG = g;
+					bestS = objRulari[z].getBooleanSol().clone();
+				}
+	
+				avgV += v;
+				avgG += g;
+				k++;
+			}
+		}
+		
+		if(k!= 0) {
+			avgV = avgV / k;
+			avgG = avgG / k;
+			// print Best Solution
+			writer.println("\n!!Best Solution:");
+			writer.println(printSolution(bestV, bestG, bestS));
+			writer.println("\n!!Average Solution:");
+			writer.println(avgV + " " + avgG);
+		} else {
+			writer.println("No valid solution was found!");
+		}
+		
+
+		
+	}
+	
+	private static ObiectRucsac hillClimbing() {
+		Random rn = new Random();
+		Boolean[] S = new Boolean[N + 1];
+		Boolean[] bestS = new Boolean[N + 1];
+		int bestV = -1, previousV = -1, bestG = -1;
+		int[] result;
+		boolean maximFound = false;
+		
+		// generate solution
+		for (int i = 0; i < N; i++) {
+			S[i] = rn.nextBoolean();
+		}
+			
+		result = computeAndCheckValid(S);
+		previousV = result[0];
+		bestV = result[0];
+		bestG = result[1];
+
+
+		while(!maximFound) {
+			// genereaza vecini si verifica daca sunt mai buni ca solutia
+			for(int i = 0; i<N;i++) {
+				S[i] = !S[i];
+				
+				result = computeAndCheckValid(S);
+				int vecinValue = result[0];
+				if(vecinValue > bestV) {
+					bestV = vecinValue;
+					bestS = S.clone();
+					bestG = result[1];
+				}
+
+				S[i] = !S[i];
+			}
+
+
+			if(bestV > previousV) {
+				previousV = bestV;
+				S = bestS.clone();
+			} else {
+				maximFound = true;
+			}
+		}
+		
+		
+		if(bestV <= 0) {
+			return null;
+		}
+		
+		ObiectRucsac obj = new ObiectRucsac();
+		obj.setBooleanSol(bestS.clone());
+		obj.setValoare(bestV);
+		obj.setGreutate(bestG);
+		return obj;
 	}
 
 }

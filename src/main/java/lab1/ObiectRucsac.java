@@ -6,6 +6,8 @@ public class ObiectRucsac {
 	private Integer valoare;
 	private Float calitate;
 	private Integer index;
+	private Boolean[] booleanSol;
+	
 
 	public Integer getGreutate() {
 		return greutate;
@@ -37,6 +39,14 @@ public class ObiectRucsac {
 
 	public void setCalitate(Float calitate) {
 		this.calitate = calitate;
+	}
+
+	public Boolean[] getBooleanSol() {
+		return booleanSol;
+	}
+
+	public void setBooleanSol(Boolean[] booleanSol) {
+		this.booleanSol = booleanSol;
 	}
 
 }
