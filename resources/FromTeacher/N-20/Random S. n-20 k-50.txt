@@ -1,0 +1,5 @@
+Rucsac: Solutie Random n-20 k-50
+V	G	Solutie
+557	517	10011100011110010100
+
+Execution time 0ms!

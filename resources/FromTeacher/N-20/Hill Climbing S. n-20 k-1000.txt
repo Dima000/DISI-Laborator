@@ -1,0 +1,4 @@
+Rucsac: Solutie Steepest Ascent Hill Climbing n-20 k-1000
+726	519	11101000010100110111
+
+Execution time 20ms!

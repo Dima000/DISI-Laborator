@@ -1,0 +1,7 @@
+Rucsac: Solutie Exhaustive n-20
+Sortat Dupa Calitate Calitate
+
+Solution:
+692	476	11001010110100110111
+
+Execution time 2ms!
