@@ -1,0 +1,5 @@
+Rucsac: Solutie Random n-30 k-10
+V	G	Solutie
+447	88	000101100101011111001101111111
+
+Execution time 0ms!

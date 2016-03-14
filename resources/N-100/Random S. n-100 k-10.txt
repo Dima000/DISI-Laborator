@@ -1,0 +1,6 @@
+Rucsac: Solutie Random n-100 k-10
+V	G	Solutie
+
+Nu exista solutie valida 
+
+Execution time 0ms!
