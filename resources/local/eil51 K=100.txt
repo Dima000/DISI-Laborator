@@ -1,0 +1,4 @@
+TSP: Solutie Cautare Locala
+Min Cost: 485
+Solution:11 2 32 1 22 8 26 31 28 3 36 20 35 29 16 21 50 34 49 5 37 17 4 47 12 46 51 27 48 23 7 43 24 6 18 14 25 13 41 40 19 42 44 33 45 15 10 39 30 9 38
+Execution time 245ms!

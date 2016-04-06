@@ -21,42 +21,46 @@ import org.apache.commons.lang3.StringUtils;
 
 
 public class Lab2 {
-	
-	private static int N = 8;
+	private static int N;
 	private static final int K = 100;
-	private static final int Margin = 500;
+	private static final int Repeat = 100;
 	
 	private static int[][] D;
 
 	private static final String INPUT_eil51 = "resources/input/eil51.txt";
 	private static final String INPUT_eil76 = "resources/input/eil76.txt";
 	private static final String INPUT_eil101 = "resources/input/eil101.txt";
-	private static final String INPUT_gr17 = "resources/input/gr17.tsp";
-	private static final String INPUT_gr96 = "resources/input/gr96.tsp";
+	private static final String INPUT_croD100 = "resources/input/kroD100.txt";
+	private static final String INPUT_croE100 = "resources/input/kroE100.txt";
 	private static final String SOL_GREEDY_eil51 = "resources/greedy/eil51.txt";
 	private static final String SOL_GREEDY_eil76 = "resources/greedy/eil76.txt";
 	private static final String SOL_GREEDY_eil101 = "resources/greedy/eil101.txt";
-	private static final String SOL_LOCAL_eil51 = "resources/local/eil51.txt";
-	private static final String SOL_LOCAL_eil76 = "resources/local/eil76.txt";
-	private static final String SOL_LOCAL_eil101 = "resources/local/eil101.txt";
+	private static final String SOL_GREEDY_kroD100 = "resources/greedy/kroD100.txt";
+	private static final String SOL_GREEDY_kroE100 = "resources/greedy/kroE100.txt";
+	private static final String SOL_LOCAL_eil51 = "resources/local/eil51 K="+ K + ".txt";
+	private static final String SOL_LOCAL_eil76 = "resources/local/eil76 K="+ K + ".txt";
+	private static final String SOL_LOCAL_eil101 = "resources/local/eil101 K="+ K + ".txt";
+	private static final String SOL_LOCAL_kroD100 = "resources/local/kroD100 K="+ K + ".txt";
+	private static final String SOL_LOCAL_kroE100 = "resources/local/kroE100 K="+ K + ".txt";
+	private static final String SOL_HIBRID_eil51 = "resources/hibrid/eil51 K="+ K + ".txt";
+	private static final String SOL_HIBRID_eil76 = "resources/hibrid/eil76 K="+ K + ".txt";
+	private static final String SOL_HIBRID_eil101 = "resources/hibrid/eil101 K="+ K + ".txt";
+	private static final String SOL_HIBRID_kroD100 = "resources/hibrid/kroD100 K="+ K + ".txt";
+	private static final String SOL_HIBRID_kroE100 = "resources/hibrid/kroE100 K="+ K + ".txt";
 	
 	
 	public static void main(final String[] args) throws IOException {
 
-		readInput(INPUT_eil51);
-		test();
+		readInput(INPUT_croD100);
+		//hibridSearch(SOL_HIBRID_kroE100);
+		//greedy(SOL_GREEDY_kroE100);
+		localSearch(SOL_LOCAL_kroE100);
 		//exhaustiveSimulation();
-		//greedy(SOL_GREEDY_eil51);
-		localSearch(SOL_LOCAL_eil51);
-//		randomSearch(SOLUTION_RANDOM_TEACHER);
-//		randomSearchOneRun(SOLUTION_RANDOM_TEACHER);
-		
-		
-//		steepestAscentSearch(SOLUTION_STEEPEST_ASCENT_TEACHER);
+
 		System.out.println("end");
 	}
 	
-	public static void readInput(String file) throws IOException {
+	private static void readInput(String file) throws IOException {
 		BufferedReader br = new BufferedReader(new FileReader(file));
 		
 		Map<Integer, int[]> points = new HashMap<Integer, int[]>();
@@ -119,34 +123,12 @@ public class Lab2 {
 	public static void greedy(String file) throws FileNotFoundException, UnsupportedEncodingException {
 		long startTime = System.nanoTime();
 		PrintWriter writer = new PrintWriter(file, "UTF-8");
-		Random rn = new Random();
-		Set<Integer> visited = new HashSet<Integer>();
-		Integer minDis, next= null, i, initial, cost= 0, first;
-		Integer[] solution = new Integer[N+2];
+		Integer cost;
 		
 		writer.println("TSP: Solutie GREEDY");
-		first = initial = rn.nextInt(N + 1);
-		visited.add(first);
-		solution[0] = first;
-		
-		for(int k=1;k<N;k++){
-			minDis = 99999999;		
-			for(i=1;i<=N;i++) { //select the closest city, may fail if not all cities are connected
-				if(!visited.contains(i) &&  D[initial][i] < minDis) {
-					minDis = D[initial][i];
-					next = i;
-				}
-			}
-			
-			visited.add(next);
-			initial = next;
-			cost+=minDis;
-			solution[k] = initial;
-		}
-		
-		cost+= D[next][first]; //add cost from last city to first
-		solution[N] = first;
-		
+		Integer[] solution = pseudo_greedy();
+		cost = computeCost(solution);
+
 		printSolution(cost, solution, writer);
 		printExecutionTime(startTime, writer);
 	}
@@ -158,14 +140,13 @@ public class Lab2 {
 		Integer bestCost = 0, tempCost, bestCostFromK = 9999999, noNewBest;
 		Integer[] solution = new Integer[N+3], tempSolution, bestSolutionFromK = null;
 		
-		
 		writer.println("TSP: Solutie Cautare Locala");
 		
-		for(int k=0;k<K;k++){
+		for(int k=0;k<Repeat;k++){
 			solution = generateRandomPermutation();
 			noNewBest = 0;
 			bestCost = 9999999;
-			while(noNewBest < Margin) {
+			while(noNewBest < K) {
 				bestCost = computeCost(solution);
 				//generate temporary solution
 				tempSolution = twoOptim(solution.clone(), rn);
@@ -191,6 +172,37 @@ public class Lab2 {
 		printExecutionTime(startTime, writer);
 		
 	}
+	
+	
+	public static void hibridSearch(String file) throws FileNotFoundException, UnsupportedEncodingException {
+		long startTime = System.nanoTime();
+		PrintWriter writer = new PrintWriter(file, "UTF-8");
+		Random rn = new Random();
+		Integer cost = 0, tempCost, noNewBest = 0;
+		Integer[] solution, tempSolution;
+		writer.println("TSP: Solutie Cautare Hibrid");
+		
+		solution = pseudo_greedy();
+		
+		while(noNewBest < K) {
+			cost = computeCost(solution);
+			//generate temporary solution
+			tempSolution = twoOptim(solution.clone(), rn);
+			tempCost = computeCost(tempSolution);
+			//update with new, better solution
+			if(tempCost < cost) {
+				cost = tempCost;
+				solution = tempSolution;
+				noNewBest = 0;
+			} else {
+				noNewBest++;
+			}
+		}
+		
+		printSolution(cost, solution, writer);
+		printExecutionTime(startTime, writer);
+	}
+	
 	
 	private static Integer[] twoOptim(Integer[] solution, Random rn) {
 		int i, j, aux;
@@ -251,14 +263,14 @@ public class Lab2 {
 		writer.print("Solution:" + strSol);
 	}
 
-	public static void printExecutionTime(final long startTime, final PrintWriter writer) {
+	private static void printExecutionTime(final long startTime, final PrintWriter writer) {
 		long endTime = System.nanoTime();
 		long duration = (endTime - startTime) / 1000000;
 		writer.println("\nExecution time " + duration + "ms!");
 		writer.close();
 	}
 	
-	public static Integer[] generateRandomPermutation() {
+	private static Integer[] generateRandomPermutation() {
 		List<Integer> list = new ArrayList<Integer>();
 		for(int i=0; i<N;i++) {
 			list.add(i+1);
@@ -267,7 +279,7 @@ public class Lab2 {
 		return list.toArray(new Integer[list.size()]);
 	}
 	
-	public static Object test() {
+	private static Object test() {
 		String str= "40 42 19 41 13 25 14 24 6 51 46 12 47 18 4 17 37 44 15 45 33 39 10 49 5 38 11 32 1 27 48 23 43 7 26 8 31 28 22 3 36 35 20 29 21 34 30 9 50 16 2";
 		String[] tokens = str.split(" ");
 		int cost = 0, j,k,z,d;
@@ -280,13 +292,41 @@ public class Lab2 {
 		return null;
 	}
 	
-	public static Integer computeCost(Integer[] sol){
+	private static Integer computeCost(Integer[] sol){
 		Integer cost = 0;
 		for(int i=0;i<N-1;i++) {
 			cost+= D[sol[i]][sol[i+1]];
 		}
 		cost+= D[sol[0]][sol[N-1]];
 		return cost;
+	}
+	
+	private static Integer[] pseudo_greedy() {
+		Random rn = new Random();
+		Set<Integer> visited = new HashSet<Integer>();
+		Integer minDis, next= null, i, initial, first;
+		Integer[] solution = new Integer[N+2];
+		
+		first = initial = rn.nextInt(N + 1);
+		visited.add(first);
+		solution[0] = first;
+		
+		for(int k=1;k<N;k++){
+			//select the closest city
+			minDis = 99999999;		
+			for(i=1;i<=N;i++) { 
+				if(!visited.contains(i) &&  D[first][i] < minDis) {
+					minDis = D[first][i];
+					next = i;
+				}
+			}
+			//add next city to go
+			visited.add(next);
+			first = next;
+			solution[k] = first;
+		}
+		solution[N] = initial;
+		return solution;
 	}
 	
 }

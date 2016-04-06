@@ -1,0 +1,4 @@
+TSP: Solutie Cautare Hibrid
+Min Cost: 445
+Solution:23 7 26 8 31 28 36 35 20 3 22 1 32 11 38 5 49 9 50 16 2 29 21 34 30 10 39 33 45 15 44 42 40 19 41 13 4 17 37 47 12 46 51 27 48 6 18 25 14 24 43
+Execution time 48ms!
