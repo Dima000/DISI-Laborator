@@ -1,4 +1,0 @@
-Rucsac: Solutie Steepest Ascent Hill Climbing n-100 k-5
-Nici o solutie valida
-
-Execution time 3ms!

@@ -43,8 +43,8 @@ public class Lab1 {
 //		randomSearch(SOLUTION_RANDOM_TEACHER);
 		randomSearchOneRun(SOLUTION_RANDOM_TEACHER);
 //		exhaustiveSearch();
-//		greedySearch(SOLUTION_GREEDY_TEACHER);
-//		steepestAscentSearch(SOLUTION_STEEPEST_ASCENT_TEACHER);
+//		greedySearch();
+//		steepestAscentSearch();
 		System.out.println("end");
 	}
 
@@ -219,11 +219,10 @@ public class Lab1 {
 		String S, bestS = "";
 		int bestG = 0, bestV = 0;
 		int tGreutate, tValoare;
-
-		long maxValue = (long) (Math.floor(Math.pow(2, N)) - 1);
+		Long maxValue = (long) Math.floor(Math.pow(2, N)) - 1;
 
 		// generate all solutions N must be < 60
-		for (Long j = maxValue; j > 0; j--) {
+		for (Long j = maxValue; j >= 0; j--) {
 			// compute Solution
 			S = StringUtils.leftPad(Long.toBinaryString(j), N, '0');
 			tGreutate = 0;
@@ -246,15 +245,11 @@ public class Lab1 {
 				bestS = S;
 			}
 		}
-
+		
 		// print execution time and Best Solution
-		long endTime = System.nanoTime();
-		long duration = (endTime - startTime) / 1000000;
-
 		writer.print("\nBest Solution: ");
 		writer.println(printStringSolution(bestV, bestG, bestS));
-		writer.println("\nExecution time " + duration + "ms!");
-		writer.close();
+		printExecutionTime(startTime, writer);
 	}
 
 	public static void greedySearch(final String file) throws FileNotFoundException, UnsupportedEncodingException {

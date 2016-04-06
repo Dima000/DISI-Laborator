@@ -1,5 +1,0 @@
-Rucsac: Solutie Random n-10 k-10
-V	G	Solutie
-193	53	1011011111
-
-Execution time 0ms!
